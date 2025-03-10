@@ -18,7 +18,7 @@ public class MapGenerator : MonoBehaviour {
 	public string seed;
 	public bool useRandomSeed;
 
-	[Range(0,58)]
+	[Range(0,75)]
 	public int randomFillPercent;
 
 	[SerializeField] int numberOfNPCs = 5;
@@ -76,9 +76,20 @@ public class MapGenerator : MonoBehaviour {
 		map = new int[width,height];
 		RandomFillMap();
 
+		// Draw a circle in the center of the map
+		DrawCircleAtLocation(width / 2, height / 2, 10);
+
+		// Draw circles that split the distance between the center and the corners
+		DrawCircleAtLocation(width / 4, height / 4, 10);
+		DrawCircleAtLocation(3 * width / 4, height / 4, 10);
+		DrawCircleAtLocation(width / 4, 3 * height / 4, 10);
+		DrawCircleAtLocation(3 * width / 4, 3 * height / 4, 10);
+
 		for (int i = 0; i < 5; i ++) {
 			SmoothMap();
 		}
+
+
 
 		ProcessMap ();
 
@@ -563,5 +574,62 @@ public class MapGenerator : MonoBehaviour {
 			}
 		}
     }
+
+	void DrawSquareAreaInCenter(int size) {
+		int centerX = width / 2;
+		int centerY = height / 2;
+
+		int startX = centerX - size / 2;
+		int startY = centerY - size / 2;
+
+		for (int x = startX; x < startX + size; x++) {
+			for (int y = startY; y < startY + size; y++) {
+				if (IsInMapRange(x, y)) {
+					map[x, y] = 0;
+				}
+			}
+		}
+	}
+
+	void DrawRectangleAtLocation(int startX, int startY, int width, int height) {
+    for (int x = startX; x < startX + width; x++) {
+        for (int y = startY; y < startY + height; y++) {
+            if (IsInMapRange(x, y)) {
+                map[x, y] = 0;
+            	}
+        	}
+    	}
+	}
+
+	void DrawCircleAreaInCenter(int radius) {
+    int centerX = width / 2;
+    int centerY = height / 2;
+
+    for (int x = -radius; x <= radius; x++) {
+        for (int y = -radius; y <= radius; y++) {
+            if (x * x + y * y <= radius * radius) {
+                int drawX = centerX + x;
+                int drawY = centerY + y;
+                if (IsInMapRange(drawX, drawY)) {
+                    map[drawX, drawY] = 0;
+                	}
+            	}
+        	}
+    	}
+	}
+
+	void DrawCircleAtLocation(int centerX, int centerY, int radius) {
+    for (int x = -radius; x <= radius; x++) {
+        for (int y = -radius; y <= radius; y++) {
+            if (x * x + y * y <= radius * radius) {
+                int drawX = centerX + x;
+                int drawY = centerY + y;
+                if (IsInMapRange(drawX, drawY)) {
+                    map[drawX, drawY] = 0;
+                	}
+           		}
+        	}
+    	}
+	}
 
 }
