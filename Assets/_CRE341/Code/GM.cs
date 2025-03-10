@@ -2,12 +2,18 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
 
+/// <summary>
+/// Manages the game's state and scene transitions. Implements the Singleton pattern.
+/// </summary>
 public class GM : MonoBehaviour
 {
     // Singleton instance
     public static GM Inst { get; private set; }
 
-    #region State machine for scene management
+    #region Game State Management
+    /// <summary>
+    /// Enum defining the possible states of the game.
+    /// </summary>
     public enum GameState
     {
         MainMenu,
@@ -18,29 +24,37 @@ public class GM : MonoBehaviour
         Paused,
         GameOver
     }
+
+    /// <summary>
+    /// The current state of the game.
+    /// </summary>
     public GameState currentState { get; private set; }
     #endregion
 
     private void Awake()
     {
-        // Singleton pattern
+        // Singleton pattern implementation
         if (Inst == null)
         {
             Inst = this;
-            DontDestroyOnLoad(gameObject); // Don't destroy on scene loads
+            DontDestroyOnLoad(gameObject); // Persist across scene loads
         }
         else
         {
             Destroy(gameObject);
-            return; // Stop further execution in Awake if destroyed
+            return; // Prevent further execution if another instance exists
         }
 
-        // Set initial game state 
+        // Initialize the game state
         currentState = GameState.Level_1;
     }
 
-    // Method to change the game state and load a new scene
-    #region scene management methods
+    #region Scene Management Methods
+    /// <summary>
+    /// Changes the current game state and loads the corresponding scene.
+    /// </summary>
+    /// <param name="newState">The new game state to transition to.</param>
+    /// <param name="sceneName">The name of the scene to load (optional).</param>
     public void ChangeState(GameState newState, string sceneName = "")
     {
         currentState = newState;
@@ -48,36 +62,23 @@ public class GM : MonoBehaviour
         switch (currentState)
         {
             case GameState.MainMenu:
-                // Load the main menu scene if a name is provided
-                if (!string.IsNullOrEmpty(sceneName))
-                {
-                    SceneManager.LoadScene(sceneName);
-                }
+                LoadScene(sceneName);
                 break;
 
             case GameState.GameStart:
-                // You can have a separate loading scene or handle loading in the background
+                // Handle any GameStart specific logic here
                 break;
 
             case GameState.Level_1:
-                // Load the scene if a name is provided
-                if (!string.IsNullOrEmpty(sceneName))
-                {
-                    SceneManager.LoadScene(sceneName);
-                }
+                LoadScene(sceneName);
                 break;
 
             case GameState.Paused:
-                // Handle pausing the game (e.g., Time.timeScale = 0;)
-                Time.timeScale = 0;
+                PauseGame();
                 break;
 
             case GameState.GameOver:
-                // Handle game over logic, potentially load a game over scene
-                if (!string.IsNullOrEmpty(sceneName))
-                {
-                    SceneManager.LoadScene(sceneName);
-                }
+                LoadScene(sceneName);
                 break;
 
             default:
@@ -86,51 +87,76 @@ public class GM : MonoBehaviour
         }
     }
 
-    // Example method to transition to the Gameplay state
+    /// <summary>
+    /// Starts the game by transitioning to the GameStart state and loading the first level.
+    /// </summary>
+    /// <param name="gameplaySceneName">The name of the first level scene.</param>
     public void StartGame(string gameplaySceneName)
     {
         ChangeState(GameState.GameStart);
         StartCoroutine(LoadSceneAndSwitchState(gameplaySceneName, GameState.Level_1));
     }
 
-    // Example method to pause the game
+    /// <summary>
+    /// Pauses the game by setting the time scale to zero.
+    /// </summary>
     public void PauseGame()
     {
         Time.timeScale = 0;
-        // ChangeState(GameState.Paused);
     }
 
-    // Example method to unpause the game
+    /// <summary>
+    /// Unpauses the game by setting the time scale to one.
+    /// </summary>
     public void UnpauseGame()
     {
         Time.timeScale = 1;
-        // ChangeState(GameState.Level_1);
     }
 
-    // Example method to go to main menu
+    /// <summary>
+    /// Navigates to the main menu scene.
+    /// </summary>
+    /// <param name="mainMenuSceneName">The name of the main menu scene.</param>
     public void GoToMainMenu(string mainMenuSceneName)
     {
         ChangeState(GameState.MainMenu, mainMenuSceneName);
     }
 
-    // Example method to handle game over
+    /// <summary>
+    /// Handles the game over state and loads the game over scene.
+    /// </summary>
+    /// <param name="gameOverSceneName">The name of the game over scene.</param>
     public void GameOver(string gameOverSceneName)
     {
         ChangeState(GameState.GameOver, gameOverSceneName);
     }
 
-    // Coroutine to load a scene asynchronously and then switch to a new state
+    /// <summary>
+    /// Loads a scene if the scene name is valid.
+    /// </summary>
+    /// <param name="sceneName">The name of the scene to load.</param>
+    private void LoadScene(string sceneName)
+    {
+        if (!string.IsNullOrEmpty(sceneName))
+        {
+            SceneManager.LoadScene(sceneName);
+        }
+    }
+
+    /// <summary>
+    /// Loads a scene asynchronously and then transitions to a new game state.
+    /// </summary>
+    /// <param name="sceneName">The name of the scene to load.</param>
+    /// <param name="newState">The game state to transition to after loading.</param>
     private IEnumerator LoadSceneAndSwitchState(string sceneName, GameState newState)
     {
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName);
 
-        // Wait until the scene is fully loaded
         while (!asyncLoad.isDone)
         {
             yield return null;
         }
 
-        // Switch to the new state
         ChangeState(newState);
     }
     #endregion
