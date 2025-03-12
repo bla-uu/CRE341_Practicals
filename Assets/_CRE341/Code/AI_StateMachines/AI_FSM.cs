@@ -9,10 +9,11 @@ public class AI_FSM : MonoBehaviour
     // Private Variables
     [SerializeField] private float distanceToPlayer;
     [SerializeField] private bool playerVisible;
-    [SerializeField] private float chaseDistance;
-    [SerializeField] private float attackDistance;
-    [SerializeField] private float chaseHysterisis;
-    [SerializeField] private float attackHysterisis;
+    [SerializeField] private float chaseDistance = 10f; // Default value
+    [SerializeField] private float attackDistance = 2f; // Default value
+    [SerializeField] private float chaseHysterisis = 2f; // Default value
+    [SerializeField] private float attackHysterisis = 0.5f; // Default value
+    
     // AI animators
     Animator fsm_anim; // top level animator for the AI FSM
     [SerializeField] private Animator AIState_Patrol; // child animator for the AI FSM
@@ -30,32 +31,50 @@ public class AI_FSM : MonoBehaviour
     {
         // set initial player distance to infinity
         distanceToPlayer = Mathf.Infinity;
+        
+        // Get the animator component
         fsm_anim = GetComponent<Animator>();
+        if (fsm_anim == null)
+        {
+            Debug.LogError("Animator component not found on " + gameObject.name);
+        }
+        
+        // Find the player if not set
+        if (player == null)
+        {
+            player = GameObject.FindGameObjectWithTag("Player");
+            if (player == null)
+            {
+                Debug.LogWarning("Player not found! AI behavior will be limited.");
+            }
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (fsm_anim == null) return;
+        
         if (fsm_anim.GetCurrentAnimatorStateInfo(0).IsName("Patrol")) 
         {
             Debug.Log("Patrol State");
-            AIState_Patrol.enabled = true; 
-            AIState_Chase.enabled = false;
-            AIState_Attack.enabled = false;
+            if (AIState_Patrol != null) AIState_Patrol.enabled = true; 
+            if (AIState_Chase != null) AIState_Chase.enabled = false;
+            if (AIState_Attack != null) AIState_Attack.enabled = false;
         }
         else if (fsm_anim.GetCurrentAnimatorStateInfo(0).IsName("Chase")) 
         {
             Debug.Log("Chase State");
-            AIState_Patrol.enabled = false;
-            AIState_Chase.enabled = true; 
-            AIState_Attack.enabled = false;
+            if (AIState_Patrol != null) AIState_Patrol.enabled = false;
+            if (AIState_Chase != null) AIState_Chase.enabled = true; 
+            if (AIState_Attack != null) AIState_Attack.enabled = false;
         }
         else if (fsm_anim.GetCurrentAnimatorStateInfo(0).IsName("Attack")) 
         {
             Debug.Log("Attack State");
-            AIState_Patrol.enabled = false;
-            AIState_Chase.enabled = false;
-            AIState_Attack.enabled = true;
+            if (AIState_Patrol != null) AIState_Patrol.enabled = false;
+            if (AIState_Chase != null) AIState_Chase.enabled = false;
+            if (AIState_Attack != null) AIState_Attack.enabled = true;
         }
     }
 
@@ -66,6 +85,18 @@ public class AI_FSM : MonoBehaviour
 
     float CheckPlayerDistance()
     {
+        // Check if player exists
+        if (player == null)
+        {
+            // Try to find the player again
+            player = GameObject.FindGameObjectWithTag("Player");
+            if (player == null)
+            {
+                // If still not found, return infinity
+                return Mathf.Infinity;
+            }
+        }
+        
         // calculate the distance to the player
         distanceToPlayer = Vector3.Distance(player.transform.position, transform.position);
         return distanceToPlayer;
@@ -73,11 +104,16 @@ public class AI_FSM : MonoBehaviour
 
     void TopLevelFSMProcessing()
     {
+        // Check if animator exists
+        if (fsm_anim == null) return;
+        
         Debug.Log("Player Visible = " + playerVisible);
-        if (playerVisible)
+        
+        // Check if player exists and is visible
+        if (player != null && playerVisible)
         {
             // note that hysterisis is used to prevent the FSM from flickering between states
-            if ( (CheckPlayerDistance() < chaseDistance - chaseHysterisis)) // if the player is within the chase distance, chase the player
+            if ((CheckPlayerDistance() < chaseDistance - chaseHysterisis)) // if the player is within the chase distance, chase the player
             {
                 fsm_anim.SetBool(FSM_PlayerSpotted, true); // if the player is within the chase distance, chase the player 
                 if (CheckPlayerDistance() < attackDistance - attackHysterisis) fsm_anim.SetBool(FSM_AttackInRange, true); // if the player is within the attack distance, attack the player

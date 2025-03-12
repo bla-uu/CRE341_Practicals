@@ -1,4 +1,3 @@
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.AI;
@@ -20,10 +19,36 @@ public class FSM_WaypointPatrol : StateMachineBehaviour
 
         // get all waypoints with tag Waypoint
         waypoints = new List<GameObject>(GameObject.FindGameObjectsWithTag("Waypoint"));
-        WaypointTarget = waypoints[Random.Range(0, waypoints.Count)].transform;
-
+        
+        // Find the NPC
         NPC_00 = GameObject.Find("NPC_00");
-        NPC_00.GetComponent<NavMeshAgent>().SetDestination(WaypointTarget.position);
+        if (NPC_00 == null)
+        {
+            Debug.LogError("NPC_00 not found! Make sure the NPC is named correctly.");
+            return;
+        }
+        
+        // Check if we have any waypoints
+        if (waypoints.Count > 0)
+        {
+            // Set a random waypoint as the target
+            WaypointTarget = waypoints[Random.Range(0, waypoints.Count)].transform;
+            
+            // Set the destination for the NavMeshAgent
+            NavMeshAgent agent = NPC_00.GetComponent<NavMeshAgent>();
+            if (agent != null)
+            {
+                agent.SetDestination(WaypointTarget.position);
+            }
+            else
+            {
+                Debug.LogError("NavMeshAgent component not found on NPC_00!");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("No waypoints found with tag 'Waypoint'! The NPC will not move.");
+        }
     }
 
     // OnStateUpdate is called on each Update frame between OnStateEnter and OnStateExit callbacks
@@ -32,14 +57,29 @@ public class FSM_WaypointPatrol : StateMachineBehaviour
         // Debug log showing the current state
         Debug.Log("On State Update ~ Patrol State");
 
-        // get parent object of the object containing the animator
-        if (Vector3.Distance(NPC_00.transform.position, WaypointTarget.position) < 0.1f)
+        // Check if we have a valid NPC and waypoint target
+        if (NPC_00 == null || WaypointTarget == null)
         {
-            WaypointTarget = waypoints[Random.Range(0, waypoints.Count)].transform;
-            NPC_00.GetComponent<NavMeshAgent>().SetDestination(WaypointTarget.position);
+            return;
         }
         
-        //NPC_00.transform.position = Vector3.MoveTowards(animator.transform.position, WaypointTarget.position, GameManager.Instance.NPC_AI_01.Speed * Time.deltaTime);
+        // Check if we've reached the current waypoint
+        if (Vector3.Distance(NPC_00.transform.position, WaypointTarget.position) < 0.1f)
+        {
+            // Make sure we have waypoints to choose from
+            if (waypoints.Count > 0)
+            {
+                // Set a new random waypoint as the target
+                WaypointTarget = waypoints[Random.Range(0, waypoints.Count)].transform;
+                
+                // Set the new destination
+                NavMeshAgent agent = NPC_00.GetComponent<NavMeshAgent>();
+                if (agent != null)
+                {
+                    agent.SetDestination(WaypointTarget.position);
+                }
+            }
+        }
     }
 
     // OnStateExit is called when a transition ends and the state machine finishes evaluating this state
@@ -48,5 +88,4 @@ public class FSM_WaypointPatrol : StateMachineBehaviour
         // debug statement 
         Debug.Log("Exiting Patrol State");
     }
-
 }
