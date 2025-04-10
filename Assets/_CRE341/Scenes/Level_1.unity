@@ -202,7 +202,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 1559428518}
-  npcPrefab: {fileID: 2286358169494211035, guid: a884620a414a9f948867359c297b2ae6, type: 3}
+  npcPrefab: {fileID: 2557956758623527597, guid: 9d6eeb026a4dc5f4a99a5286d89d0dbd, type: 3}
   waypointsPrefab: {fileID: 8560873365045129249, guid: 60359ab39d3ed3f42ab598c7b21b9ebd, type: 3}
   groundObject: {fileID: 631091595}
   width: 128
@@ -210,7 +210,7 @@ MonoBehaviour:
   seed: 0
   useRandomSeed: 1
   randomFillPercent: 58
-  numberOfNPCs: 5
+  numberOfNPCs: 1
   npcs: []
   numberWaypoints: 4
   waypoints: []
