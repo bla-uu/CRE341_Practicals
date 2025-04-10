@@ -8,7 +8,7 @@ public class FSM_ChasePathfind : StateMachineBehaviour
     override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
         Player = GameObject.Find("Player");
-        NPC_00 = GameObject.Find("NPC_00");
+        NPC_00 = GameObject.Find("NPC_00(Clone)");
         // NPC_00.GetComponent<NavMeshAgent>().enabled = true;
         NPC_00.GetComponent<NavMeshAgent>().SetDestination(Player.transform.position);
     }
