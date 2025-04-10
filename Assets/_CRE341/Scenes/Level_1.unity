@@ -210,7 +210,7 @@ MonoBehaviour:
   seed: 0
   useRandomSeed: 1
   randomFillPercent: 58
-  numberOfNPCs: 1
+  numberOfNPCs: 2
   npcs: []
   numberWaypoints: 4
   waypoints: []
